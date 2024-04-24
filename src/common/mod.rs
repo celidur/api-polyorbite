@@ -4,5 +4,5 @@ mod group;
 pub mod password;
 
 pub use ldap::Ldap;
-pub use user::{ModifyUser, User};
-pub use group::Group;
+pub use user::{ModifyUser, User, Users};
+pub use group::{Group, Groups};

@@ -10,24 +10,22 @@ async fn main() {
     dotenv().ok(); // Load the .env file
 
 
-    let mut ldap = Ldap::new().await.unwrap();
+    let ldap = Ldap::new().await;
+    if ldap.is_err() {
+        panic!("{:?}", ldap.err().unwrap());
+    }
+    let mut ldap = ldap.unwrap();
 
-    ldap.test_connection().await.unwrap();
+    ldap.update().await.unwrap();
 
-    ldap.update_groups().await.unwrap();
-    ldap.update_users().await.unwrap();
+    let modified_user = ModifyUser::new().number("12345".to_string());
 
-    let modified_user = ModifyUser::new().number("1234".to_string());
-
-    let res = ldap.modify_user("test.test2", modified_user).await.unwrap();
-
-    let user = ldap.update_user_info_by_id("test.test2").await;
-    println!("{:?}", user);
+    let res = ldap.users.modify_user("test.test", modified_user).await.unwrap();
 
     println!("Modify user result: {}", res);
 
 
-    let users = ldap.get_users().await;
+    let users = ldap.users.to_vec().await;
     for user in users {
         if !user.password.starts_with("{SSHA}") {
             println!("{:?}", user);

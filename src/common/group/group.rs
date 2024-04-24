@@ -1,6 +1,6 @@
 use ldap3::SearchEntry;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Group {
     pub dn: String,
     pub cn: String,
