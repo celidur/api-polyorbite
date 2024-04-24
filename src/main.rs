@@ -1,14 +1,14 @@
 use dotenv::dotenv;
 
+use crate::common::{Ldap, ModifyUser};
+
 mod common;
 
-use common::ldap::Ldap;
 
 #[tokio::main]
 async fn main() {
     dotenv().ok(); // Load the .env file
 
-    let secret = "ximkog-8civvu-pynpYf";
 
     let mut ldap = Ldap::new().await.unwrap();
 
@@ -17,14 +17,15 @@ async fn main() {
     ldap.update_groups().await.unwrap();
     ldap.update_users().await.unwrap();
 
-    let user = ldap
-        .get_user_by_id("gaetan.florio")
-        .await
-        .unwrap();
+    let modified_user = ModifyUser::new().number("1234".to_string());
 
-    let is_verified = user.verify_password(secret);
+    let res = ldap.modify_user("test.test2", modified_user).await.unwrap();
 
-    println!("Verification result: {}", is_verified);
+    let user = ldap.update_user_info_by_id("test.test2").await;
+    println!("{:?}", user);
+
+    println!("Modify user result: {}", res);
+
 
     let users = ldap.get_users().await;
     for user in users {
