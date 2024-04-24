@@ -1,4 +1,5 @@
-use super::{Groups, Users};
+use super::user::Users;
+use super::group::Groups;
 use std::env;
 
 use ldap3::LdapConnAsync;

@@ -1,6 +1,6 @@
 use dotenv::dotenv;
 
-use crate::common::{Ldap, ModifyUser};
+use crate::common::{Ldap, user::ModifyUser};
 
 mod common;
 
@@ -18,11 +18,17 @@ async fn main() {
 
     ldap.update().await.unwrap();
 
-    let modified_user = ModifyUser::new().number("12345".to_string());
+    let modified_user = ModifyUser::new().password("password".to_string());
 
-    let res = ldap.users.modify_user("test.test", modified_user).await.unwrap();
+    let res = ldap.users.modify_user("gs", modified_user).await.unwrap();
 
     println!("Modify user result: {}", res);
+
+    let user = ldap.users.user("gs").await.unwrap();
+
+    println!("verif : {}", user.verify_password("password"));
+
+    println!("user: {:?}", user);
 
 
     let users = ldap.users.to_vec().await;
