@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use ldap3::SearchEntry;
 use crate::common::password::Password;
 
@@ -5,7 +7,7 @@ use super::UserAttribute;
 
 #[derive(Debug, Clone)]
 pub struct User {
-    pub uid: String,
+    pub(super) uid: String,
     pub password: String,
     pub mail: String,
     pub first_name: String,
@@ -76,5 +78,24 @@ impl User {
 
     pub fn verify_password(&self, password: &str) -> bool {
         Password::verify(password, self.password.as_str())
+    }
+
+    pub fn to_ldif(&self) -> Vec<(&str, HashSet<&str>)> {
+        let mut ldif = Vec::new();
+
+        ldif.push((UserAttribute::Password.as_str(), HashSet::from([self.password.as_str()])));
+        ldif.push((UserAttribute::Mail.as_str(), HashSet::from([self.mail.as_str()])));
+        ldif.push((UserAttribute::FirstName.as_str(), HashSet::from([self.first_name.as_str()])));
+        ldif.push((UserAttribute::LastName.as_str(), HashSet::from([self.last_name.as_str()])));
+        ldif.push((UserAttribute::Name.as_str(), HashSet::from([self.name.as_str()])));
+        ldif.push((UserAttribute::School.as_str(), HashSet::from([self.school.as_str()])));
+        ldif.push((UserAttribute::Genie.as_str(), HashSet::from([self.genie.as_str()])));
+        ldif.push((UserAttribute::Uid.as_str(), HashSet::from([self.uid.as_str()])));
+        ldif.push((UserAttribute::Matricule.as_str(), HashSet::from([self.matricule.as_str()])));
+        ldif.push((UserAttribute::Number.as_str(), HashSet::from([self.number.as_str()])));
+        ldif.push(("objectClass", HashSet::from(["inetOrgPerson"])));
+        let ldif = ldif.into_iter().filter(|(_, v)| !v.contains("")).collect();
+
+        ldif
     }
 }

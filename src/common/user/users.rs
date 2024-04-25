@@ -163,6 +163,28 @@ impl Users {
             return Ok(false);
         }
 
+        let (conn, mut ldap) = LdapConnAsync::new(self.ldap_url.as_str()).await?;
+        ldap3::drive!(conn);
+
+        ldap.simple_bind(self.ldap_user.as_str(), self.ldap_password.as_str())
+            .await?
+            .success()?;
+
+        let dn = format!("uid={},{}", user.uid, self.users_base_dn);
+
+        let result = ldap
+            .add(dn.as_str(), user.to_ldif())
+            .await?
+            .success();
+
+        ldap.unbind().await?;
+
+        if result.is_err() {
+            return Ok(false);
+        }
+
+        self.update_user(user.uid.as_str()).await?;
+
         Ok(true)
     }
 }

@@ -30,7 +30,7 @@ impl Ldap {
 
         let url = format!("{}:{}", host, port);
 
-        let users = Users::new(
+        let mut users = Users::new(
             url.clone(),
             user.clone(),
             password.clone(),
@@ -38,13 +38,17 @@ impl Ldap {
             base_dn.clone(),
         );
 
-        let groups = Groups::new(
+        let _ = users.update().await;
+
+        let mut groups = Groups::new(
             url.clone(),
             user.clone(),
             password.clone(),
             groups_base_dn.clone(),
             base_dn.clone(),
         );
+
+        let _ = groups.update().await;
 
         let res = Ldap::test_connection(url.as_str(), user.as_str(), password.as_str()).await;
         if res.is_err() || res.unwrap() == false {

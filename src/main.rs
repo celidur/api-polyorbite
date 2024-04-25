@@ -1,6 +1,6 @@
 use dotenv::dotenv;
 
-use crate::common::{Ldap, user::ModifyUser};
+use crate::common::{Ldap, user::ModifyUser, user::UserBuilder};
 
 mod common;
 
@@ -16,25 +16,44 @@ async fn main() {
     }
     let mut ldap = ldap.unwrap();
 
-    ldap.update().await.unwrap();
+    test_user(&mut ldap).await;    
+}
 
-    let modified_user = ModifyUser::new().password("password".to_string());
+async fn test_user(ldap: &mut Ldap) {
+    let value = ldap.users.user("user_test").await.is_some();
+    let res = ldap.users.delete_user("user_test").await;
+    if res.is_err() {
+        panic!("{:?}", res.err().unwrap());
+    }
+    let res = res.unwrap();
+    println!("Delete user result: {} expected: {}", res, value);
+    
+    let new_user = UserBuilder::new().uid("user_test".to_string()).password("test".to_string()).mail("test".to_string()).last_name("test".to_string()).first_name("test".to_string()).name("test".to_string()).build();
+    if new_user.is_err() {
+        panic!("{:?}", new_user.err().unwrap());
+    }
+    let new_user = new_user.unwrap();
 
-    let res = ldap.users.modify_user("gs", modified_user).await.unwrap();
+    println!("new_user: {:?}", new_user);
 
+    let res = ldap.users.new_user(new_user).await;
+    if res.is_err() {
+        panic!("{:?}", res.err().unwrap());
+    }
+    let res = res.unwrap();
+
+    if res {
+        let user = ldap.users.user("user_test").await.unwrap();
+        println!("user: {:?}", user);
+    } else {
+        panic!("Failed to create user");
+    }
+
+    let modify = ModifyUser::new().password("password".to_string());
+    let res = ldap.users.modify_user("user_test", modify).await.unwrap();
     println!("Modify user result: {}", res);
 
-    let user = ldap.users.user("gs").await.unwrap();
-
-    println!("verif : {}", user.verify_password("password"));
-
+    let user = ldap.users.user("user_test").await.unwrap();
     println!("user: {:?}", user);
-
-
-    let users = ldap.users.to_vec().await;
-    for user in users {
-        if !user.password.starts_with("{SSHA}") {
-            println!("{:?}", user);
-        }
-    }
+    println!("verif : {}", user.verify_password("password"));
 }
