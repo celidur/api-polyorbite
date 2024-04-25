@@ -1,4 +1,4 @@
-use crate::common::password::{Hash, Password};
+use crate::common::password::{Password, DEFAULT_HASH};
 
 use super::User;
 
@@ -34,7 +34,7 @@ impl UserBuilder {
     }
 
     pub fn password(mut self, password: String) -> Self {
-        self.user.password = Password::hash(password.as_str(), Hash::SSHA);
+        self.user.password = Password::hash(password.as_str(), DEFAULT_HASH);
         self
     }
 

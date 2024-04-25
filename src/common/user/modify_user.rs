@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use ldap3::Mod;
 
-use crate::common::password::{Hash, Password};
+use crate::common::password::{DEFAULT_HASH, Password};
 
 use super::{User, UserAttribute};
 
@@ -38,7 +38,7 @@ impl ModifyUser {
     }
 
     pub fn password(mut self, password: String) -> Self {
-        self.password = Some(Password::hash(password.as_str(), Hash::SSHA));
+        self.password = Some(Password::hash(password.as_str(), DEFAULT_HASH));
         self
     }
 
