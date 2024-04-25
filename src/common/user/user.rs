@@ -49,6 +49,7 @@ impl User {
                 UserAttribute::Matricule => matricule = value[0].clone(),
                 UserAttribute::Number => number = value[0].clone(),
                 UserAttribute::MemberOf => member = Some(value.clone()),
+                UserAttribute::Picture => picture = Some(value[0].clone().into_bytes()),
                 _ => {}
             }
         }

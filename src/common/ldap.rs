@@ -6,7 +6,7 @@ use ldap3::LdapConnAsync;
 
 #[derive(Debug)]
 pub struct Ldap {
-    groups: Groups,
+    pub groups: Groups,
     pub users: Users,
 }
 

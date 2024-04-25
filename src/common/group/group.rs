@@ -6,6 +6,7 @@ pub struct Group {
     pub cn: String,
     pub user_members: Vec<String>,
     pub group_members: Vec<String>,
+    pub owner: Vec<String>
 }
 
 impl Group {
@@ -13,6 +14,7 @@ impl Group {
         let mut dn = String::new();
         let mut cn = String::new();
         let mut member = vec![];
+        let mut owner = vec![];
 
         dn = entry.dn.clone();
 
@@ -20,9 +22,12 @@ impl Group {
             match key.as_str() {
                 "cn" => cn = value[0].clone(),
                 "member" => member = value.clone(),
+                "owner" => owner = value.clone(),
                 _ => {}
             }
         }
+        let owner: Vec<String> = owner.iter().map(|o| o.split(",").next().unwrap().split("=").last().unwrap().to_string()).collect();
+
         let mut user_members = vec![];
         let mut group_members = vec![];
 
@@ -41,6 +46,7 @@ impl Group {
             cn,
             user_members,
             group_members,
+            owner
         }
     }
 }

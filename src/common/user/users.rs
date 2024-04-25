@@ -106,27 +106,44 @@ impl Users {
             return Ok(false);
         }
     
-        let changes = modification.to_ldif(user.unwrap());
-
-        if changes.is_empty() {
-            return Ok(false);
-        }
+        let (changes1, changes2) = modification.to_ldif(user.unwrap());
 
         let dn = format!("uid={},{}", id, self.users_base_dn);
 
-        let result = ldap
-            .modify(dn.as_str(), changes)
-            .await?
-            .success();
-
-        ldap.unbind().await?;
-
-
-        self.update_user(id).await?;
-
-        if result.is_err() {
+        if changes1.is_empty() && changes2.is_empty() {
             return Ok(false);
         }
+
+
+        if !changes1.is_empty(){
+            let result = ldap
+                .modify(dn.as_str(), changes1)
+                .await?
+                .success();
+
+            if result.is_err() {
+                ldap.unbind().await?;
+                return Ok(false);
+            }
+
+        }
+
+        if !changes2.is_empty(){
+            let result = ldap
+                .modify(dn.as_str(), changes2)
+                .await?
+                .success();
+
+            if result.is_err() {
+                ldap.unbind().await?;
+                println!("{:?}", result.err().unwrap());
+                return Ok(false);
+            }
+
+        }
+
+        ldap.unbind().await?;
+        self.update_user(id).await?;
 
         Ok(true)
     }
@@ -184,6 +201,11 @@ impl Users {
         }
 
         self.update_user(user.uid.as_str()).await?;
+
+        if user.picture.is_some() {
+            let modification = ModifyUser::new().picture(user.picture.unwrap());
+            self.modify_user(user.uid.as_str(), modification).await?;
+        }
 
         Ok(true)
     }

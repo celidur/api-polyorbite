@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, vec};
 
 use ldap3::Mod;
 
@@ -101,7 +101,7 @@ impl ModifyUser {
         self
     }
 
-    pub fn to_ldif(&self, user: User) -> Vec<Mod<&str>> {
+    pub fn to_ldif(&self, user: User) -> (Vec<Mod<&str>>, Vec<Mod<&[u8]>>) {
         let mut ldif = Vec::new();
 
         if let Some(password) = &self.password {
@@ -188,12 +188,12 @@ impl ModifyUser {
             }
         }
 
-        // let ldif2: Vec<Mod<Vec<u8>>> = vec![];
+        let mut ldif2:Vec<Mod<&[u8]>> = vec![];
 
-        if let Some(_picture) = &self.picture {
-            todo!("Add picture modification");
+        if let Some(picture) = &self.picture {
+            ldif2.push(Mod::Replace(UserAttribute::Picture.as_bytes(), HashSet::from([picture.as_slice()])));
         }
 
-        ldif
+        (ldif, ldif2)
     }
 }
