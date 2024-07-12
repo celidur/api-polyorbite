@@ -7,7 +7,7 @@ use super::UserAttribute;
 
 #[derive(Debug, Clone)]
 pub struct User {
-    pub(super) uid: String,
+    pub uid: String,
     pub password: String,
     pub mail: String,
     pub first_name: String,
@@ -18,7 +18,7 @@ pub struct User {
     pub matricule: String,
     pub number: String,
     pub picture: Option<Vec<u8>>,
-    pub member: Option<Vec<String>>,
+    pub member: Option<HashSet<String>>,
 }
 
 impl User {
@@ -48,7 +48,11 @@ impl User {
                 UserAttribute::Uid => uid = value[0].clone(),
                 UserAttribute::Matricule => matricule = value[0].clone(),
                 UserAttribute::Number => number = value[0].clone(),
-                UserAttribute::MemberOf => member = Some(value.clone()),
+                UserAttribute::MemberOf => {
+                    let reg = regex::Regex::new( r"cn=([^,]+)").unwrap();
+                    let value: HashSet<String> = value.iter().map(|v|  reg.captures_iter(v).map(|c| c[1].to_string()).collect::<Vec<String>>()).flatten().collect();
+                    member = Some(value.clone())
+                },
                 UserAttribute::Picture => picture = Some(value[0].clone().into_bytes()),
                 _ => {}
             }

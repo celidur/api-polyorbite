@@ -1,9 +1,10 @@
+use std::vec;
+
 use dotenv::dotenv;
 
 use crate::common::{Ldap, user::ModifyUser, user::UserBuilder};
 
 mod common;
-
 
 #[tokio::main]
 async fn main() {
@@ -16,7 +17,20 @@ async fn main() {
     }
     let mut ldap = ldap.unwrap();
 
-    test_user(&mut ldap).await;    
+    // test_user(&mut ldap).await;    
+
+    // let groups = ldap.groups.to_vec().await;
+    // for group in groups {
+    //     if group.cn == "steporbite" {
+    //         println!("{:?}", group);
+    //     }
+    // }
+
+
+    let res = ldap.groups.add_group_owner("polyorbite", vec!["uid=gaetan.florio,ou=people,dc=polyorbite,dc=com"]).await;
+
+    let group = ldap.groups.group("polyorbite").await.unwrap();
+    println!("{:?}", group);
 }
 
 async fn test_user(ldap: &mut Ldap) {
@@ -28,7 +42,7 @@ async fn test_user(ldap: &mut Ldap) {
     let res = res.unwrap();
     println!("Delete user result: {} expected: {}", res, value);
     
-    let new_user = UserBuilder::new().uid("user_test".to_string()).password("test".to_string()).mail("test".to_string()).last_name("test".to_string()).first_name("test".to_string()).name("test".to_string()).build();
+    let new_user = UserBuilder::new().uid("user_test".to_string()).password("test".to_string()).mail("test".to_string()).last_name("test".to_string()).first_name("test".to_string()).name("test".to_string()).picture(vec![137, 80]).build();
     if new_user.is_err() {
         panic!("{:?}", new_user.err().unwrap());
     }

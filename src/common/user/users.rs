@@ -209,4 +209,8 @@ impl Users {
 
         Ok(true)
     }
+
+    pub async fn member_of(&self, cn: &str) -> Vec<User> {
+        self.users.lock().await.values().filter(|u| u.member.is_some() && u.member.as_ref().unwrap().contains(cn)).map(|u| u.clone()).collect()
+    }
 }
