@@ -2,14 +2,17 @@ use std::vec;
 
 use dotenv::dotenv;
 
-use api_polyorbite::common::{Ldap, user::ModifyUser, user::UserBuilder};
+use api_polyorbite::common::{user::{ModifyUser, UserBuilder}, Config, Ldap};
 
 #[tokio::main]
 async fn main() {
     dotenv().ok(); // Load the .env file
+    
+    let config = Config::init();
 
+    println!("{:?}", config);
 
-    let ldap = Ldap::new().await;
+    let ldap = Ldap::new(config).await;
     if ldap.is_err() {
         panic!("{:?}", ldap.err().unwrap());
     }
@@ -24,11 +27,10 @@ async fn main() {
     //     }
     // }
 
+    // let res = ldap.groups.add_group_owner("polyorbite", vec!["uid=gaetan.florio,ou=people,dc=polyorbite,dc=com"]).await;
 
-    let res = ldap.groups.add_group_owner("polyorbite", vec!["uid=gaetan.florio,ou=people,dc=polyorbite,dc=com"]).await;
-
-    let group = ldap.groups.group("polyorbite").await.unwrap();
-    println!("{:?}", group);
+    // let group = ldap.groups.group("polyorbite").await.unwrap();
+    // println!("{:?}", group);
 }
 
 async fn test_user(ldap: &mut Ldap) {
