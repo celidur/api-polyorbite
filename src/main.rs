@@ -26,7 +26,7 @@ async fn main() {
 
     let ldap_result = timeout(Duration::from_secs(5), Ldap::new(config.clone())).await;
 
-    let mut ldap = match ldap_result {
+    let ldap = match ldap_result {
         Ok(Ok(ldap)) => {
             tracing::debug!("🚀 Connected to the LDAP server successfully");
             ldap
